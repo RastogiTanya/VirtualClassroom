@@ -51,7 +51,9 @@ fs.readdirSync(routesPath).forEach(function (file) {
 		route.setRouter(app);
 	}
 });
-
+process.on("unhandledRejection", (err, p) => {
+	console.log(`Rejection: ${err}`);
+});
 // end bootstrap route
 /**
  * Create HTTP server.

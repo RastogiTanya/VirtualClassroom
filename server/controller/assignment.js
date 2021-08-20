@@ -78,10 +78,11 @@ const createAssignment = async (req, res) => {
 				}
 			);
 			let list = createassign.listOfStudents;
+
 			list.forEach(async (student) => {
 				let filter = { _id: student.studentId };
 
-				let getStudent = await UserModel.findOneAndUpdate(filter, {
+				await UserModel.findOneAndUpdate(filter, {
 					$push: {
 						assignments: {
 							assignmentId: createassign._id,
@@ -91,20 +92,11 @@ const createAssignment = async (req, res) => {
 						},
 					},
 				});
-				if (getStudent) {
-					console.log("if");
-					return res.json({
-						result: true,
-						message: "Assignment created",
-						assignment: createassign,
-					});
-				} else {
-					console.log("Not assigned");
-					return res.json({
-						result: false,
-						message: "Assignment not assigned.",
-					});
-				}
+			});
+			return res.json({
+				result: true,
+				message: "Assignment created",
+				assignment: createassign,
 			});
 		} else {
 			console.log("in else");
