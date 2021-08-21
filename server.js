@@ -69,7 +69,7 @@ process.on("unhandledRejection", (err, p) => {
 // console.log("object");
 const server = http.createServer(app);
 
-server.listen(process.env.port);
+server.listen(process.env.PORT || 5000);
 server.on("error", onError);
 
 server.on("listening", onListening);
