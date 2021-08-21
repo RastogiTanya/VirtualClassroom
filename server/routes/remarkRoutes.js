@@ -1,11 +1,13 @@
 const remarkController = require("../controller/remark");
 const middleWare = require("../middleware/auth");
+const validator = require("../validator/remarkValidator");
 let setRouter = (app) => {
 	let baseUrl = `/assignment`;
 	app.post(
 		`${baseUrl}/remark`,
 		middleWare.verifyToken,
 		middleWare.admin,
+		validator.giveRemark,
 		remarkController.giveRemark
 	);
 };

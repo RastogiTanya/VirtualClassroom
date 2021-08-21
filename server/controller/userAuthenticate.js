@@ -5,11 +5,18 @@ const UsersModel = require("../models/Users");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
+const { validationResult } = require("express-validator");
 dotenv.config();
 
 //for registering a tutor
 const tutorRegister = async (req, res) => {
 	try {
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(422).json({
+				error: errors.array()[0],
+			});
+		}
 		console.log("user register", req.body);
 
 		let userData = await UsersModel.findOne({
@@ -56,6 +63,12 @@ const tutorRegister = async (req, res) => {
 //for user login
 const userLogin = async (req, res) => {
 	try {
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(422).json({
+				error: errors.array()[0],
+			});
+		}
 		let userData = await UsersModel.findOne({
 			username: req.body.username,
 		});
@@ -116,7 +129,13 @@ const userLogin = async (req, res) => {
 
 const userRegister = async (req, res) => {
 	try {
-		console.log("user register", req.body);
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(422).json({
+				error: errors.array()[0],
+			});
+		}
+		//console.log("user register", req.body);
 
 		const salt = await bcrypt.genSalt(10);
 		let password = await bcrypt.hash(req.body.password, salt);

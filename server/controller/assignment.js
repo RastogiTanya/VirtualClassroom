@@ -177,10 +177,7 @@ const getAssignments = async (req, res) => {
 		if (req.userData.isAdmin) {
 			getAssignments = await UserModel.findById(
 				req.userData._id
-			).populate(
-				"assignments.assignmentId",
-				"name description status deadlineDate publishingDate listOfStudents "
-			);
+			).populate("assignments.assignmentId", "name description ");
 		} else {
 			getAssignments = await UserModel.findById(
 				req.userData._id
@@ -240,9 +237,114 @@ const deleteAssignment = async (req, res) => {
 	}
 };
 
+//get the detials of an assignment by tutor
+const getAssignByTutor = async (req, res) => {
+	try {
+		//get the details of the assignment from assignment model
+		let assignment = await AssignmentModel.findById(
+			req.body.assignmentId
+		).populate("listOfStudents.studentId", "username assignments");
+
+		//getting the list of students to whom assignment was assigned
+		let students = assignment.listOfStudents;
+
+		let listOfStudents = [];
+		students.forEach((student) => {
+			//for getting the
+			for (let i = 0; i < student.studentId.assignments.length; i++) {
+				//finding the assignment from the list of assignments assigned to a student
+				if (
+					String(student.studentId.assignments[i].assignmentId) ==
+					String(req.body.assignmentId)
+				) {
+					//pushing in array the status,username amd remarks of a student for that assignment
+					listOfStudents.push({
+						username: student.studentId.username,
+						status: student.studentId.assignments[i].status,
+						remark: student.studentId.assignments[i].remark,
+					});
+				}
+			}
+		});
+
+		//constructing the required object to remove unnecessary details
+		let data = {
+			nameOfAssignment: assignment.name,
+			description: assignment.description,
+			deadlineDate: assignment.deadlineDate,
+			publishingDate: assignment.publishingDate,
+			statusOfAssignment: assignment.status,
+			listOfStudents,
+		};
+		res.status(200).json({
+			result: true,
+			data,
+		});
+	} catch (error) {
+		res.status(400).json({
+			result: false,
+			error,
+		});
+	}
+};
+
+//get the detail of an assignment assigned to a particular student
+const getAssignByStudent = async (req, res) => {
+	try {
+		//getting the data from assignment model
+		let assignment = await AssignmentModel.findById(
+			req.body.assignmentId
+		).populate("tutorId", "username");
+
+		//simplifying the data
+		let data = {
+			name: assignment.name,
+			description: assignment.description,
+			deadlineDate: assignment.deadlineDate,
+			publishingDate: assignment.publishingDate,
+			statusOfAssignment: assignment.status,
+			tutorUsername: assignment.tutorId.username,
+		};
+		//console.log(data);
+		var currentdate = new Date();
+		//getting the status of the student for that assignment
+		let assignmentDetail = await UserModel.findById(req.userData._id);
+		let assignmentArray = assignmentDetail.assignments;
+
+		//looping through the list of assignments in user data
+		for (let assignment of assignmentArray) {
+			if (
+				String(assignment.assignmentId) == String(req.body.assignmentId)
+			) {
+				if (currentdate > data.deadlineDate) {
+					assignment.status = "Overdue";
+					await UserModel.findOneAndUpdate(
+						{ _id: req.userData._id },
+						{ $set: assignmentDetail }
+					);
+				}
+
+				console.log(assignment.status);
+				data.myStatus = assignment.status;
+				console.log(data);
+				data.remark = assignment.remark;
+			}
+		}
+		console.log("object");
+		res.json({ data });
+	} catch (error) {
+		res.status(400).json({
+			result: false,
+			error,
+		});
+	}
+};
+
 module.exports = {
 	createAssignment,
 	updateAssignment,
 	getAssignments,
 	deleteAssignment,
+	getAssignByTutor,
+	getAssignByStudent,
 };

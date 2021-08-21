@@ -9,10 +9,16 @@ const cors = require("cors");
 const colors = require("colors");
 const logger = require("morgan");
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.raw({ type: "*/*" }));
-//app.use(cookieParser());
+// app.use(bodyParser.json({ limit: "50mb" }));
+// app.use(
+// 	bodyParser.urlencoded({
+// 		extended: true,
+// 		limit: "50mb",
+// 		parameterLimit: 100000,
+// 	})
+// );
+// app.use(bodyParser.raw({ type: "*/*" }));
+app.use(express.json());
 app.use(cors());
 
 app.use((req, res, next) => {
@@ -51,6 +57,7 @@ fs.readdirSync(routesPath).forEach(function (file) {
 		route.setRouter(app);
 	}
 });
+app.use("/uploads", express.static("./uploads"));
 process.on("unhandledRejection", (err, p) => {
 	console.log(`Rejection: ${err}`);
 });
