@@ -8,7 +8,8 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const colors = require("colors");
 const logger = require("morgan");
-
+const dotenv = require("dotenv");
+dotenv.config();
 // app.use(bodyParser.json({ limit: "50mb" }));
 // app.use(
 // 	bodyParser.urlencoded({
@@ -68,7 +69,7 @@ process.on("unhandledRejection", (err, p) => {
 // console.log("object");
 const server = http.createServer(app);
 
-server.listen(8070);
+server.listen(process.env.port);
 server.on("error", onError);
 
 server.on("listening", onListening);
@@ -85,23 +86,12 @@ function onError(error) {
 	// handle specific listen errors with friendly messages
 	switch (error.code) {
 		case "EACCES":
-			// logger.error(
-			// 	error.code + ":elavated privileges required",
-			// 	"serverOnErrorHandler",
-			// 	10
-			// );
 			process.exit(1);
 			break;
 		case "EADDRINUSE":
-			// logger.error(
-			// 	error.code + ":port is already in use.",
-			// 	"serverOnErrorHandler",
-			// 	10
-			// );
 			process.exit(1);
 			break;
 		default:
-			//logger.error(error.code + ':some unknown error occured', 'serverOnErrorHandler', 10);
 			throw error;
 	}
 }
