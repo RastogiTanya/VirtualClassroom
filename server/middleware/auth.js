@@ -4,7 +4,7 @@ const UserModel = require("../models/Users");
 dotenv.config();
 
 //authenticating students
-const verifyToken = async (req, res, next) => {
+const verifyUser = async (req, res, next) => {
 	try {
 		var authHeader =
 			req.body.authorization ||
@@ -12,7 +12,7 @@ const verifyToken = async (req, res, next) => {
 			req.headers["x-access-token"] ||
 			req.headers["authorization"];
 		var decoded;
-		//console.log("kkk");
+
 		if (authHeader) {
 			let token = authHeader.split(" ");
 			decoded = jwt.verify(token[1], process.env.secret);
@@ -25,7 +25,6 @@ const verifyToken = async (req, res, next) => {
 				if (findUser == null) {
 					return res.json({ success: 0, message: "Invalid User" });
 				} else {
-					//console.log("object", findUser);
 					req.userData = findUser;
 					next();
 				}
@@ -39,9 +38,8 @@ const verifyToken = async (req, res, next) => {
 };
 
 // middleware for admin/tutor only
-const admin = async (req, res, next) => {
-	//console.log(req.userData);
-	if (req.userData && req.userData.isAdmin) {
+const verifyTutor = async (req, res, next) => {
+	if (req.userData && req.userData.isTutor) {
 		next();
 	} else {
 		res.status(401);
@@ -50,6 +48,6 @@ const admin = async (req, res, next) => {
 };
 
 module.exports = {
-	verifyToken,
-	admin,
+	verifyTutor,
+	verifyUser,
 };

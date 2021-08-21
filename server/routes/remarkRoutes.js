@@ -5,8 +5,8 @@ let setRouter = (app) => {
 	let baseUrl = `/assignment`;
 	app.post(
 		`${baseUrl}/remark`,
-		middleWare.verifyToken,
-		middleWare.admin,
+		middleWare.verifyUser,
+		middleWare.verifyTutor,
 		validator.giveRemark,
 		remarkController.giveRemark
 	);

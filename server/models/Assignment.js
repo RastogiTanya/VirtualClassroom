@@ -19,18 +19,14 @@ const AssignmentSchema = new Schema({
 				type: mongoose.Schema.Types.ObjectId,
 				ref: "Users",
 			},
-			// status: {
-			// 	type: String,
-			// 	default: "Not submitted",
-			// },
 		},
-	],//submission -> status:submitted !!
+	],
 	deadlineDate: { type: Date, default: Date.now },
-
 	publishingDate: { type: Date, default: Date.now },
 	status: {
 		type: String,
-		default: "NA", //scheduled,ongoing
+		default: "NA",
 	},
 });
 module.exports = mongoose.model("Assignment", AssignmentSchema);
+//

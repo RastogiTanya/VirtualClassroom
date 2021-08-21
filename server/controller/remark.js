@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const bcrypt = require("bcryptjs");
 const UserModel = require("../models/Users");
 const AssignmentModel = require("../models/Assignment");
 const nodemailer = require("nodemailer");
@@ -21,16 +20,19 @@ const giveRemark = async (req, res) => {
 		let assignmentId = req.body.assignmentId;
 		let assignments = await AssignmentModel.findById(assignmentId);
 
+		//to check only the owner of the assignment is able to give the remark, no the tutor can do so
 		if (String(req.userData._id) !== String(assignments.tutorId)) {
 			return res.json({
 				result: false,
 				message: "Sorry you are not the owner of the assignment",
 			});
 		}
+
+		//finding the student and assignment to which remark needs to be given
 		let student = await UserModel.findById(req.body.studentId);
 		let assignmentsArray = student.assignments;
 		let emailId = student.username;
-		assignmentsArray.forEach(async (assignment) => {
+		for (let assignment of assignmentsArray) {
 			if (assignment.assignmentId == assignmentId) {
 				assignment.remark = req.body.remark;
 				await UserModel.findOneAndUpdate(
@@ -38,12 +40,14 @@ const giveRemark = async (req, res) => {
 					{ $set: student }
 				);
 			}
-		});
+		}
 
 		res.json({
 			result: true,
 			message: "Successfully remarked",
 		});
+
+		//sending mail to the student
 		const mailOptions = {
 			from: process.env.email,
 			to: emailId,

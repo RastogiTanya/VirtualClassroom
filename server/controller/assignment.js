@@ -1,10 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const bcrypt = require("bcryptjs");
 const UserModel = require("../models/Users");
 const AssignmentModel = require("../models/Assignment");
 const nodemailer = require("nodemailer");
-const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -17,7 +15,6 @@ const transporter = nodemailer.createTransport({
 });
 const createAssignment = async (req, res) => {
 	try {
-		//	console.log("assignment ", req.body);
 		let {
 			name,
 			description,
@@ -26,6 +23,7 @@ const createAssignment = async (req, res) => {
 			publishingDate,
 		} = req.body;
 		let tutorId = req.userData._id;
+
 		//converting to date format
 		var currentdate = new Date();
 		deadlineDate = new Date(deadlineDate);
@@ -66,8 +64,10 @@ const createAssignment = async (req, res) => {
 			deadlineDate,
 			status,
 		});
+
+		//entering the assignment id in tutor's model
 		if (createassign) {
-			let tutorDetails = await UserModel.findOneAndUpdate(
+			await UserModel.findOneAndUpdate(
 				{ _id: req.userData._id },
 				{
 					$push: {
@@ -79,7 +79,8 @@ const createAssignment = async (req, res) => {
 			);
 			let list = createassign.listOfStudents;
 
-			list.forEach(async (student) => {
+			//assigning the assignment to all the students whom tutor wished
+			for (let student of list) {
 				let filter = { _id: student.studentId };
 
 				await UserModel.findOneAndUpdate(filter, {
@@ -92,21 +93,21 @@ const createAssignment = async (req, res) => {
 						},
 					},
 				});
-			});
+			}
 			return res.json({
 				result: true,
 				message: "Assignment created",
 				assignment: createassign,
 			});
-		} else {
-			console.log("in else");
+		}
+		//if assignment is not created
+		else {
 			return res.json({
 				result: false,
 				message: "Assignment not created.",
 			});
 		}
 	} catch (error) {
-		console.log("error");
 		res.json({
 			result: false,
 			error,
@@ -115,8 +116,15 @@ const createAssignment = async (req, res) => {
 };
 const updateAssignment = async (req, res) => {
 	try {
-		console.log(req.body);
 		let assignmentid = req.body.assignmentId;
+		//to check only the owner of the assignment is able to give the remark, no the tutor can do so
+		if (String(req.userData._id) !== String(assignments.tutorId)) {
+			return res.json({
+				result: false,
+				message: "Sorry you are not the owner of the assignment",
+			});
+		}
+
 		let assignmentDetails = {};
 		if (req.body.name) {
 			assignmentDetails.name = req.body.name;
@@ -130,14 +138,14 @@ const updateAssignment = async (req, res) => {
 		if (req.body.deadlineDate) {
 			assignmentDetails.deadlineDate = req.body.deadlineDate;
 		}
-		let filter = { _id: assignmentid };
-		const updatedassignment = await AssignmentModel.findOneAndUpdate(
-			filter,
-			{
-				$set: assignmentDetails,
-			}
-		);
 
+		//updating the assignment details
+		let filter = { _id: assignmentid };
+		await AssignmentModel.findOneAndUpdate(filter, {
+			$set: assignmentDetails,
+		});
+
+		//getting the list of student mails to whom this assignment was assigned
 		const assignments = await AssignmentModel.findById(assignmentid);
 		let listOfStudents = assignments.listOfStudents;
 		console.log(listOfStudents);
@@ -146,6 +154,9 @@ const updateAssignment = async (req, res) => {
 			let stud = await UserModel.findById(student.studentId);
 			emailIds.push(stud.username);
 		});
+
+		//mailing students regarding the updated assignment
+		//sending mass mail
 		const mailOptions = {
 			from: process.env.email,
 			to: emailIds,
@@ -173,19 +184,25 @@ const updateAssignment = async (req, res) => {
 
 const getAssignments = async (req, res) => {
 	try {
-		let getAssignments;
-		if (req.userData.isAdmin) {
-			getAssignments = await UserModel.findById(
+		function checkIfDeleted(assignment) {
+			return assignment.assignmentId.status != "Deleted";
+		}
+		let getAllAssignments;
+		if (req.userData.isTutor) {
+			getAllAssignments = await UserModel.findById(
 				req.userData._id
 			).populate("assignments.assignmentId", "name description ");
 		} else {
-			getAssignments = await UserModel.findById(
+			getAllAssignments = await UserModel.findById(
 				req.userData._id
-			).populate("assignments.assignmentId", "-_id -listOfStudents");
+			).populate("assignments.assignmentId", "-_id -listOfStudents"); //name descrip status
+
+			getAllAssignments.assignments =
+				getAllAssignments.assignments.filter(checkIfDeleted);
 		}
 
 		res.json({
-			assignments: getAssignments.assignments,
+			assignments: getAllAssignments.assignments,
 		});
 	} catch (error) {
 		res.status(400).json({
@@ -195,36 +212,22 @@ const getAssignments = async (req, res) => {
 	}
 };
 
+//deletign an assignment that is setting the status of that assignment to delete
 const deleteAssignment = async (req, res) => {
 	try {
-		let assignmentId = req.body.assignmentId;
-
+		let assignmentId = req.query.assignmentId;
+		//to check only the owner of the assignment is able to give the remark, no the tutor can do so
+		if (String(req.userData._id) !== String(assignments.tutorId)) {
+			return res.json({
+				result: false,
+				message: "Sorry you are not the owner of the assignment",
+			});
+		}
 		//updating the status of assignment to "deleted"
-		let deletedAssignment = await AssignmentModel.findOneAndUpdate(
+		await AssignmentModel.findOneAndUpdate(
 			{ _id: assignmentId },
 			{ status: "Deleted" }
 		);
-		let assign = await AssignmentModel.findById(assignmentId);
-
-		//getting the array of students to whom assignment is assigned
-		let students = assign.listOfStudents;
-
-		//updating the staus of assignment as "deleted" for every student to whom assignment is assigned
-		students.forEach(async (student) => {
-			let user = await UserModel.findById(student.studentId);
-
-			for (let i = 0; i < user.assignments.length; i++) {
-				let assignmentid = user.assignments[i].assignmentId;
-				//console.log(user.assignments[i].assignmentId);
-				if (assignmentid == assignmentId) {
-					user.assignments[i].status = "Deleted";
-					await UserModel.findOneAndUpdate(
-						{ _id: user._id },
-						{ $set: user }
-					);
-				}
-			}
-		});
 		res.json({
 			result: true,
 			message: "Assignment deleted successfully",
@@ -237,7 +240,7 @@ const deleteAssignment = async (req, res) => {
 	}
 };
 
-//get the detials of an assignment by tutor
+//get the details of an assignment by tutor
 const getAssignByTutor = async (req, res) => {
 	try {
 		//get the details of the assignment from assignment model
@@ -250,7 +253,7 @@ const getAssignByTutor = async (req, res) => {
 
 		let listOfStudents = [];
 		students.forEach((student) => {
-			//for getting the
+			//for getting assignments assigned to a student
 			for (let i = 0; i < student.studentId.assignments.length; i++) {
 				//finding the assignment from the list of assignments assigned to a student
 				if (
@@ -305,7 +308,7 @@ const getAssignByStudent = async (req, res) => {
 			statusOfAssignment: assignment.status,
 			tutorUsername: assignment.tutorId.username,
 		};
-		//console.log(data);
+
 		var currentdate = new Date();
 		//getting the status of the student for that assignment
 		let assignmentDetail = await UserModel.findById(req.userData._id);
@@ -340,6 +343,20 @@ const getAssignByStudent = async (req, res) => {
 	}
 };
 
+const getFilteredAssignment = async (req, res) => {
+	try {
+		function checkFilter(assignment) {
+			return assignment.status == req.query.status;
+		}
+		let userDetails = await UserModel.findById(req.userData._id);
+		let assignments = userDetails.assignments;
+		assignments = assignments.filter(checkFilter);
+		res.json({
+			assignments,
+		});
+	} catch (error) {}
+};
+
 module.exports = {
 	createAssignment,
 	updateAssignment,
@@ -347,4 +364,5 @@ module.exports = {
 	deleteAssignment,
 	getAssignByTutor,
 	getAssignByStudent,
+	getFilteredAssignment,
 };

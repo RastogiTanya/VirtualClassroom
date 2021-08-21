@@ -39,11 +39,10 @@ let setRouter = (app) => {
 	let baseUrl = `/assignment`;
 	app.post(
 		`${baseUrl}/submit`,
-		middleWare.verifyToken,
+		middleWare.verifyUser,
 		upload.single("pdfFile"),
 		submissionController.submitAssignment,
 		(error, req, res, next) => {
-			//console.log(error);
 			res.status(400).send({ error });
 		}
 	);

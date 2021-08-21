@@ -14,12 +14,6 @@ let setRouter = (app) => {
 		userController.tutorRegister
 	);
 	app.post(`${baseUrl}/login`, validator.userLogin, userController.userLogin);
-	app.get(
-		`${baseUrl}/get`,
-		middleWare.verifyToken,
-		middleWare.admin,
-		userController.getDetails
-	);
 };
 module.exports = {
 	setRouter: setRouter,

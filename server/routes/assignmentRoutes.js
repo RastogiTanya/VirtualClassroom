@@ -5,42 +5,48 @@ let setRouter = (app) => {
 	let baseUrl = `/assignment`;
 	app.post(
 		`${baseUrl}/create`,
-		middleWare.verifyToken,
-		middleWare.admin,
+		middleWare.verifyUser,
+		middleWare.verifyTutor,
 		validator.assignmentCreate,
 		assignmentController.createAssignment
 	);
 	app.post(
 		`${baseUrl}/update`,
-		middleWare.verifyToken,
-		middleWare.admin,
+		middleWare.verifyUser,
+		middleWare.verifyTutor,
 		validator.assignmentUpdate,
 		assignmentController.updateAssignment
 	);
 	app.get(
 		`${baseUrl}/get`,
-		middleWare.verifyToken,
+		middleWare.verifyUser,
 		assignmentController.getAssignments
 	);
-	app.post(
+	app.get(
 		`${baseUrl}/delete`,
-		middleWare.verifyToken,
-		middleWare.admin,
+		middleWare.verifyUser,
+		middleWare.verifyTutor,
 		validator.assignmentUpdate,
 		assignmentController.deleteAssignment
 	);
 	app.get(
 		`${baseUrl}/tutor`,
-		middleWare.verifyToken,
-		middleWare.admin,
+		middleWare.verifyUser,
+		middleWare.verifyTutor,
 		validator.assignmentByTutor,
 		assignmentController.getAssignByTutor
 	);
 	app.get(
 		`${baseUrl}/student`,
-		middleWare.verifyToken,
+		middleWare.verifyUser,
 		validator.assignmentByStudent,
 		assignmentController.getAssignByStudent
+	);
+	app.get(
+		`${baseUrl}/filter`,
+		middleWare.verifyUser,
+		//validator.assignmentByStudent,
+		assignmentController.getFilteredAssignment
 	);
 };
 module.exports = {

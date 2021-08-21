@@ -10,7 +10,7 @@ const UserSchema = new Schema({
 		type: String,
 		required: true,
 	},
-	isAdmin: {
+	isTutor: {
 		type: Boolean,
 		default: false,
 	},
