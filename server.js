@@ -107,7 +107,8 @@ function onListening() {
 	var bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
 	"Listening on " + bind;
 	let db = mongoose.connect(
-		"mongodb+srv://AnyUser:VC@1234@virtualclassroom.ecly2.mongodb.net/VirualClassroom?retryWrites=true&w=majority",
+		process.env.MONGO_URL,
+
 		{
 			useNewUrlParser: true,
 			useUnifiedTopology: true,
