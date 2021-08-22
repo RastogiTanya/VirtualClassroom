@@ -43,7 +43,7 @@ Req body
 }
 ```
 
-# ------------------------------------------------------------------------------------------
+### --------------------------------------------------------------------
 
 ### LOGIN
 
@@ -59,7 +59,7 @@ Req body
 }
 ```
 
-# --------------------------------------------------------------------------------------------
+### --------------------------------------------------------------------
 
 ### Create ASSIGNMENT (protected) ONLY FOR TUTOR
 
@@ -83,7 +83,7 @@ Req body
 }
 ```
 
-# --------------------------------------------------------
+### --------------------------------------------------------------------
 
 ### UPDATE ASSIGNMENT (protected) ONLY FOR TUTOR
 
@@ -103,7 +103,7 @@ Req body
 
 #### informs student to whom assignment was assigned via mail
 
-# ---------------------------------------------------------------------------
+### --------------------------------------------------------------------
 
 ### DELETE ASSIGNMENT (protected) ONLY FOR TUTOR
 
@@ -120,7 +120,7 @@ Req body
 }
 ```
 
-# -------------------------------------------------------------------------
+### --------------------------------------------------------------------
 
 ### GET ALL ASSIGNMENT LIST
 
@@ -138,7 +138,7 @@ No body required
 
 #### 2. If user is a tutor then all the assignments created by that tutor would be displayed. Assignment id,name and description would be visible. When a tutor will click on any assignment then Get an assignment by totur will run and all the further details regarding an assignment will be shown.
 
-# ----------------------------------------------------------------------------
+### --------------------------------------------------------------------
 
 ### GET AN ASSIGNMENT BY TUTOR
 
@@ -153,11 +153,11 @@ Key= assignmentId
 Value= 6121e9a96ea8137ac069a407"
 }
 
-### Gives the details of an assignment along with the students and their status,submission and remarks of that assignment.
+#### Gives the details of an assignment along with the students and their status,submission and remarks of that assignment.
 
 #### also updates the status of assignment if it has crossed its deadline date
 
-# --------------------------------------------------------------------------------
+### --------------------------------------------------------------------
 
 ### GET AN ASSIGNMENT BY STUDENT
 
@@ -174,7 +174,7 @@ Value= 6121e9a96ea8137ac069a407"
 
 ### Gives the detail of an assignment along with that student's status,remark
 
-# -----------------------------------------------------------------------------------------------
+### --------------------------------------------------------------------
 
 ### GET FILTERED ASSIGNMENT BASED ON STATUS
 
@@ -194,7 +194,7 @@ Value= Pending
 
 ### NOTES --> Value can be pending, overdue or submitted. If any other value is entered then response will be No assignments found.
 
-# --------------------------------------------------------------------------------------------
+### --------------------------------------------------------------------
 
 ### GIVE REMARK
 
@@ -216,7 +216,7 @@ Req body
 Only the owner of the assignment can give remark, any other tutor can not do so.
 Mail is sent to the student once his assignment has been remarked.
 
-# ---------------------------------------------------------------------------------------------------
+### ----------------------------------------------------------------------
 
 ### SUBMIT ASSIGNMENT
 
