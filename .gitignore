@@ -45,6 +45,7 @@ testem.log
 Thumbs.db
 
 # dotenv environment variables file
+.env
 .env.test
 .env*.local
 ./env.js
