@@ -5,13 +5,13 @@
 Pass the token generated after login into the header with key name **x-access-token**.
 **ATK -> x-access-token**
 
-##### IMPORTANT ------>>>>>>>>>>>>>>>>
+### IMPORTANT ------>>>>>>>>>>>>>>>>
 
 PLEASE USE email in username for registration and login apis !!
 
-##### IMPORTANT ------>>>>>>>>>>>>>>>>
+### IMPORTANT ------>>>>>>>>>>>>>>>>
 
-# ----------------------------------------------------------------------------------------
+### --------------------------------------------------------------------
 
 ### REGISTER AS A Student
 
@@ -27,7 +27,7 @@ Req body
 }
 ```
 
-# ------------------------------------------------------------------------------------------
+### --------------------------------------------------------------------
 
 ### REGISTER AS A TUTOR
 
@@ -101,7 +101,7 @@ Req body
 }
 ```
 
-## informs student to whom assignment was assigned via mail
+#### informs student to whom assignment was assigned via mail
 
 # ---------------------------------------------------------------------------------------------------------
 
@@ -134,9 +134,9 @@ No body required
 
 ### NOTES:
 
-# 1.If user is a student then the all assignments and the status of assignment for that student along with the details of assignment would be displayed.
+#### 1.If user is a student then the all assignments and the status of assignment for that student along with the details of assignment would be displayed.
 
-# 2. If user is a tutor then all the assignments created by that tutor would be displayed. Assignment id,name and description would be visible. When a tutor will click on any assignment then Get an assignment by totur will run and all the further details regarding an assignment will be shown.
+#### 2. If user is a tutor then all the assignments created by that tutor would be displayed. Assignment id,name and description would be visible. When a tutor will click on any assignment then Get an assignment by totur will run and all the further details regarding an assignment will be shown.
 
 # ---------------------------------------------------------------------------------------------------------------
 
@@ -153,9 +153,9 @@ Key= assignmentId
 Value= 6121e9a96ea8137ac069a407"
 }
 
-# Gives the details of an assignment along with the students and their status,submission and remarks of that assignment.
+### Gives the details of an assignment along with the students and their status,submission and remarks of that assignment.
 
-# also updates the status of assignment if it has crossed its deadline date
+#### also updates the status of assignment if it has crossed its deadline date
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -172,7 +172,7 @@ Key= assignmentId
 Value= 6121e9a96ea8137ac069a407"
 }
 
-# Gives the detail of an assignment along with that student's status,remark
+### Gives the detail of an assignment along with that student's status,remark
 
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -230,4 +230,4 @@ Req body
 pdfFile = {any pdf here}
 assignmentId= 612208c814a8ee4e3883969f
 
-# NOTES: If assignment's deadline is over then student can not submit the assignment , also he can submit only one submission for an assignment
+### NOTES: If assignment's deadline is over then student can not submit the assignment , also he can submit only one submission for an assignment
