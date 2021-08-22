@@ -132,7 +132,8 @@ mongoose.connection.on("open", function (err) {
 		console.log(err);
 	} else {
 		console.log(
-			`database connected successfully port no : 8070`.yellow.bold
+			`database connected successfully port no : ${process.env.PORT}`
+				.yellow.bold
 		);
 		// logger.info("database connection open",
 		//   'database connection open handler', 10)

@@ -7,6 +7,3 @@ exports.assignmentCreate = [
 	body("publishingDate").not().isEmpty(),
 ];
 exports.assignmentUpdate = [body("assignmentId").not().isEmpty()];
-exports.assignmentDelete = [body("assignmentId").not().isEmpty()];
-exports.assignmentByTutor = [body("assignmentId").not().isEmpty()];
-exports.assignmentByStudent = [body("assignmentId").not().isEmpty()];

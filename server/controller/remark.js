@@ -3,7 +3,6 @@ const router = express.Router();
 const UserModel = require("../models/Users");
 const AssignmentModel = require("../models/Assignment");
 const nodemailer = require("nodemailer");
-
 const dotenv = require("dotenv");
 
 dotenv.config();
@@ -64,7 +63,7 @@ const giveRemark = async (req, res) => {
 	} catch (error) {
 		res.status(400).json({
 			result: false,
-			error,
+			mesage: "Error while giving the remark",
 		});
 	}
 };

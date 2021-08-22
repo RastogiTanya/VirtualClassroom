@@ -26,26 +26,22 @@ let setRouter = (app) => {
 		`${baseUrl}/delete`,
 		middleWare.verifyUser,
 		middleWare.verifyTutor,
-		validator.assignmentUpdate,
 		assignmentController.deleteAssignment
 	);
 	app.get(
 		`${baseUrl}/tutor`,
 		middleWare.verifyUser,
 		middleWare.verifyTutor,
-		validator.assignmentByTutor,
 		assignmentController.getAssignByTutor
 	);
 	app.get(
 		`${baseUrl}/student`,
 		middleWare.verifyUser,
-		validator.assignmentByStudent,
 		assignmentController.getAssignByStudent
 	);
 	app.get(
 		`${baseUrl}/filter`,
 		middleWare.verifyUser,
-		//validator.assignmentByStudent,
 		assignmentController.getFilteredAssignment
 	);
 };

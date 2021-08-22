@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { validationResult } = require("express-validator");
 const UserModel = require("../models/Users");
 const AssignmentModel = require("../models/Assignment");
 const nodemailer = require("nodemailer");
@@ -13,8 +14,17 @@ const transporter = nodemailer.createTransport({
 		pass: process.env.pass,
 	},
 });
+
+//creating an assignment by tutor
 const createAssignment = async (req, res) => {
 	try {
+		//if any errors
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(422).json({
+				error: errors.array()[0],
+			});
+		}
 		let {
 			name,
 			description,
@@ -110,15 +120,26 @@ const createAssignment = async (req, res) => {
 	} catch (error) {
 		res.json({
 			result: false,
-			error,
+			msg: "There was a problem in creating the assignment",
 		});
 	}
 };
+
+//updating the assignment
 const updateAssignment = async (req, res) => {
 	try {
+		//if any errors
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			return res.status(422).json({
+				error: errors.array()[0],
+			});
+		}
 		let assignmentid = req.body.assignmentId;
+
 		//to check only the owner of the assignment is able to give the remark, no the tutor can do so
-		if (String(req.userData._id) !== String(assignments.tutorId)) {
+		let getassignments = await AssignmentModel.findById(assignmentid);
+		if (String(req.userData._id) !== String(getassignments.tutorId)) {
 			return res.json({
 				result: false,
 				message: "Sorry you are not the owner of the assignment",
@@ -137,6 +158,9 @@ const updateAssignment = async (req, res) => {
 		}
 		if (req.body.deadlineDate) {
 			assignmentDetails.deadlineDate = req.body.deadlineDate;
+		}
+		if (req.body.status) {
+			assignmentDetails.status = req.body.status;
 		}
 
 		//updating the assignment details
@@ -177,11 +201,12 @@ const updateAssignment = async (req, res) => {
 	} catch (error) {
 		res.status(400).json({
 			result: false,
-			error,
+			msg: "There was a problem in updating the assignment",
 		});
 	}
 };
 
+//getting the list of assignments
 const getAssignments = async (req, res) => {
 	try {
 		function checkIfDeleted(assignment) {
@@ -195,7 +220,7 @@ const getAssignments = async (req, res) => {
 		} else {
 			getAllAssignments = await UserModel.findById(
 				req.userData._id
-			).populate("assignments.assignmentId", "-_id -listOfStudents"); //name descrip status
+			).populate("assignments.assignmentId", " -listOfStudents"); //name descrip status
 
 			getAllAssignments.assignments =
 				getAllAssignments.assignments.filter(checkIfDeleted);
@@ -207,7 +232,7 @@ const getAssignments = async (req, res) => {
 	} catch (error) {
 		res.status(400).json({
 			result: false,
-			error,
+			msg: "There was a problem in fetching the assignments",
 		});
 	}
 };
@@ -217,7 +242,8 @@ const deleteAssignment = async (req, res) => {
 	try {
 		let assignmentId = req.query.assignmentId;
 		//to check only the owner of the assignment is able to give the remark, no the tutor can do so
-		if (String(req.userData._id) !== String(assignments.tutorId)) {
+		let getassignments = await AssignmentModel.findById(assignmentId);
+		if (String(req.userData._id) !== String(getassignments.tutorId)) {
 			return res.json({
 				result: false,
 				message: "Sorry you are not the owner of the assignment",
@@ -235,7 +261,7 @@ const deleteAssignment = async (req, res) => {
 	} catch (error) {
 		res.status(400).json({
 			result: false,
-			error,
+			msg: "There was a problem in deleting the assignment",
 		});
 	}
 };
@@ -243,10 +269,20 @@ const deleteAssignment = async (req, res) => {
 //get the details of an assignment by tutor
 const getAssignByTutor = async (req, res) => {
 	try {
+		var currentDate = new Date();
 		//get the details of the assignment from assignment model
 		let assignment = await AssignmentModel.findById(
-			req.body.assignmentId
+			req.query.assignmentId
 		).populate("listOfStudents.studentId", "username assignments");
+
+		//updating the status of assignment once it has reached beyond the deadline
+		if (assignment.deadlineDate < currentDate) {
+			assignment.status = "Over";
+		}
+		await AssignmentModel.findOneAndUpdate(
+			{ _id: req.query.assignmentId },
+			{ $set: assignment }
+		);
 
 		//getting the list of students to whom assignment was assigned
 		let students = assignment.listOfStudents;
@@ -258,13 +294,14 @@ const getAssignByTutor = async (req, res) => {
 				//finding the assignment from the list of assignments assigned to a student
 				if (
 					String(student.studentId.assignments[i].assignmentId) ==
-					String(req.body.assignmentId)
+					String(req.query.assignmentId)
 				) {
 					//pushing in array the status,username amd remarks of a student for that assignment
 					listOfStudents.push({
 						username: student.studentId.username,
 						status: student.studentId.assignments[i].status,
 						remark: student.studentId.assignments[i].remark,
+						submission: student.studentId.assignments[i].submission,
 					});
 				}
 			}
@@ -286,7 +323,7 @@ const getAssignByTutor = async (req, res) => {
 	} catch (error) {
 		res.status(400).json({
 			result: false,
-			error,
+			msg: "There was a problem in fetching the assignment",
 		});
 	}
 };
@@ -296,7 +333,7 @@ const getAssignByStudent = async (req, res) => {
 	try {
 		//getting the data from assignment model
 		let assignment = await AssignmentModel.findById(
-			req.body.assignmentId
+			req.query.assignmentId
 		).populate("tutorId", "username");
 
 		//simplifying the data
@@ -317,9 +354,13 @@ const getAssignByStudent = async (req, res) => {
 		//looping through the list of assignments in user data
 		for (let assignment of assignmentArray) {
 			if (
-				String(assignment.assignmentId) == String(req.body.assignmentId)
+				String(assignment.assignmentId) ==
+				String(req.query.assignmentId)
 			) {
-				if (currentdate > data.deadlineDate) {
+				if (
+					currentdate > data.deadlineDate &&
+					assignment.status != "Submitted"
+				) {
 					assignment.status = "Overdue";
 					await UserModel.findOneAndUpdate(
 						{ _id: req.userData._id },
@@ -327,18 +368,17 @@ const getAssignByStudent = async (req, res) => {
 					);
 				}
 
-				console.log(assignment.status);
 				data.myStatus = assignment.status;
-				console.log(data);
+				data.mySubmission = assignment.submission;
 				data.remark = assignment.remark;
 			}
 		}
-		console.log("object");
-		res.json({ data });
+
+		res.json({ result: true, data });
 	} catch (error) {
-		res.status(400).json({
+		return res.status(500).json({
+			msg: "There was a problem in fetching the assignment",
 			result: false,
-			error,
 		});
 	}
 };
@@ -351,10 +391,23 @@ const getFilteredAssignment = async (req, res) => {
 		let userDetails = await UserModel.findById(req.userData._id);
 		let assignments = userDetails.assignments;
 		assignments = assignments.filter(checkFilter);
-		res.json({
-			assignments,
+		if (assignments.length > 0) {
+			return res.json({
+				result: true,
+				assignments,
+			});
+		} else {
+			return res.json({
+				result: false,
+				msg: "No assignments found",
+			});
+		}
+	} catch (error) {
+		return res.status(401).json({
+			result: true,
+			msg: "There was a problem in fetching the assignment",
 		});
-	} catch (error) {}
+	}
 };
 
 module.exports = {

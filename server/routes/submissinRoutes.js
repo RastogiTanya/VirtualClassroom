@@ -5,17 +5,14 @@ const path = require("path");
 
 const storage = multer.diskStorage({
 	destination: (req, file, cb) => {
-		cb(null, "uploads/");
+		cb(null, "uploads/"); //uploading in uploads folder
 	},
 	filename: (req, file, cb) => {
-		cb(
-			null,
-			Date.now() + "-" + file.originalname
-			//`${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`
-		);
+		cb(null, Date.now() + "-" + file.originalname); //setting the name
 	},
 });
 
+//function for checking whether the assignment uploaded is a pdf or not
 function checkFileType(file, cb, next, res) {
 	const filetypes = /pdf/;
 	const extname = filetypes.test(
@@ -40,7 +37,7 @@ let setRouter = (app) => {
 	app.post(
 		`${baseUrl}/submit`,
 		middleWare.verifyUser,
-		upload.single("pdfFile"),
+		upload.single("pdfFile"), //for uploading only single file in submission.
 		submissionController.submitAssignment,
 		(error, req, res, next) => {
 			res.status(400).send({ error });

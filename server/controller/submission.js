@@ -1,9 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const bcrypt = require("bcryptjs");
 const UserModel = require("../models/Users");
 const AssignmentModel = require("../models/Assignment");
-const nodemailer = require("nodemailer");
 
 const submitAssignment = async (req, res) => {
 	try {
@@ -12,17 +10,23 @@ const submitAssignment = async (req, res) => {
 
 		//getting the list of assignments assigned to a student
 		let assignments = student.assignments;
-
+		var currentDate = new Date();
 		//looping through the assignment to find the correct assignmnet for which the student wants to do the submission
-		assignments.forEach(async (assignment) => {
+		for (let assignment of assignments) {
 			//selecting the assignment
 			if (
 				String(assignment.assignmentId) == String(req.body.assignmentId)
 			) {
-				if(assignment.status=="Submitted"){
+				let assignmentDetails = await AssignmentModel.findById(
+					req.body.assignmentId
+				);
+				console.log(assignmentDetails);
+				if (assignmentDetails.deadlineDate < currentDate) {
 					return res.json({
-						result:false
-					})
+						result: false,
+						message:
+							"Sorry can not submit assignment beyond deadline date.",
+					});
 				}
 				//updating
 				assignment.submission = req.file.path;
@@ -32,7 +36,7 @@ const submitAssignment = async (req, res) => {
 					{ $set: student }
 				);
 			}
-		});
+		}
 		res.json({
 			result: true,
 			message: "Assignment submitted",
@@ -40,7 +44,7 @@ const submitAssignment = async (req, res) => {
 	} catch (error) {
 		res.status(400).json({
 			result: false,
-			error,
+			message: "Error occurred while submitting the assignment.",
 		});
 	}
 };
