@@ -45,7 +45,7 @@ const tutorRegister = async (req, res) => {
 			message: "Tutor successfully registered",
 			token: token,
 		});
-	} catch (error) {
+	} catch (err) {
 		//Duplicate field error !!
 		if (err.name === "MongoError" && err.code === 11000) {
 			res.status(401).json({

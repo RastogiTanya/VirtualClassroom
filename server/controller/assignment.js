@@ -390,6 +390,12 @@ const getFilteredAssignment = async (req, res) => {
 		}
 		let userDetails = await UserModel.findById(req.userData._id);
 		let assignments = userDetails.assignments;
+		if (req.query.status == "All") {
+			return res.json({
+				result: true,
+				assignments,
+			});
+		}
 		assignments = assignments.filter(checkFilter);
 		if (assignments.length > 0) {
 			return res.json({
